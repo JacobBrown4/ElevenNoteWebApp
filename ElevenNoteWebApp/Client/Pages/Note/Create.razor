@@ -1,0 +1,64 @@
+﻿@page "/note/create"
+@using ElevenNoteWebApp.Shared.Models.Note
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@inject HttpClient http
+@using ElevenNoteWebApp.Shared.Models.Category
+@inject NavigationManager navigation
+
+<h3>Create</h3>
+@if (errorMessage != null)
+{
+    <h5 class="text-danger">@errorMessage</h5>
+}
+@if (categories == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="container">
+        <EditForm Model="@model" OnValidSubmit="@HandleSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="form-group">
+                <lable>Title</lable>
+                <InputText class="form-control" @bind-Value="model.Title" />
+            </div>
+            <div class="form-group">
+                <label>Content</label>
+                <InputTextArea class="form-control" @bind-Value="model.Content" />
+            </div>
+            <label>Category</label>
+            <InputSelect class="form-control" @bind-Value="model.CategoryId">
+                @foreach (var category in categories)
+                {
+                <option value="@category.Id">@category.Name</option>
+                }
+        </InputSelect>
+        <button type="submit" class="btn btn-primary btn-block mt-5">Submit</button>
+    </EditForm>
+</div>
+}
+@code {
+    private NoteCreate model = new();
+    private IEnumerable<CategoryListItem> categories;
+    private string errorMessage;
+    protected override async Task OnInitializedAsync()
+    {
+        categories = await http.GetFromJsonAsync<IEnumerable<CategoryListItem>>("/api/category/");
+    }
+    private async void HandleSubmit()
+    {
+        var createRes = await http.PostAsJsonAsync<NoteCreate>("/api/note", model);
+        if (createRes.IsSuccessStatusCode)
+        {
+            navigation.NavigateTo("/note");
+        }
+        else
+        {
+            errorMessage = "Could not create your note right now. Please try again later.";
+        }
+    }
+
+}

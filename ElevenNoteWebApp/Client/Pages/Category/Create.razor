@@ -1,0 +1,39 @@
+﻿@page "/category/create"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@inject HttpClient http
+@using ElevenNoteWebApp.Shared.Models.Category
+@inject NavigationManager navigation
+
+<h3>Create</h3>
+@if(errorMessage != null)
+{
+    <h5 class="text-danger">@errorMessage</h5>
+}
+<div class="container">
+    <EditForm Model="@model" OnValidSubmit="@HandleSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="form-group">
+            <label>Name</label>
+            <InputText class="form-control" @bind-Value="model.Name" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block mt-5">Submit</button>
+    </EditForm>
+</div>
+@code {
+    private CategoryCreate model = new();
+    private string errorMessage;
+    private async void HandleSubmit()
+    {
+        var createRes = await http.PostAsJsonAsync<CategoryCreate>("/api/category", model);
+        if (createRes.IsSuccessStatusCode)
+        {
+            navigation.NavigateTo("/category");
+        }
+        else
+        {
+            errorMessage = $"Could not create your category right now. Please try again later.{createRes.StatusCode}";
+        }
+    }
+}

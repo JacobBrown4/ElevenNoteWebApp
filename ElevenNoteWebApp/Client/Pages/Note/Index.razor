@@ -1,0 +1,42 @@
+﻿@page "/note"
+@using ElevenNoteWebApp.Shared.Models.Note
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@inject HttpClient http
+<h3>Index</h3>
+<a href="/note/create">Create a note</a>
+@if (_notes == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>&nbsp;</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var note in _notes)
+            {
+                <tr>
+                    <td><strong>@note.Title</strong></td>
+                    <td>
+                        <a href=@($"note/{note.Id}")>Details</a>
+                        <a href=@($"note/edit/{note.Id}")>Edit</a>
+                        <a href=@($"note/delete/{note.Id}")>Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@code {
+    private IEnumerable<NoteListItem> _notes;
+    protected override async Task OnInitializedAsync()
+    {
+        _notes = await http.GetFromJsonAsync<List<NoteListItem>>("/api/note");
+    }
+}

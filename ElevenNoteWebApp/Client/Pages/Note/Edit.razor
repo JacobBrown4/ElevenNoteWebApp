@@ -1,0 +1,69 @@
+﻿@page "/note/edit/{NoteId:int}"
+@using ElevenNoteWebApp.Shared.Models.Note
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@inject HttpClient http
+@using ElevenNoteWebApp.Shared.Models.Category
+@inject NavigationManager navigation
+
+<h3>Edit Note: @model.Title</h3>
+@if (errorMessage != null)
+{
+    <h5 class="text-danger">@errorMessage</h5>
+}
+@if (categories == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="container">
+        <EditForm Model="@model" OnValidSubmit="@HandleSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="form-group">
+                <lable>Title</lable>
+                <InputText class="form-control" @bind-Value="model.Title" />
+            </div>
+            <div class="form-group">
+                <label>Content</label>
+                <InputTextArea class="form-control" @bind-Value="model.Content" />
+            </div>
+            <label>Category</label>
+            <InputSelect class="form-control" @bind-Value="model.CategoryId">
+                @foreach (var category in categories)
+                {
+                <option value="@category.Id">@category.Name</option>
+                }
+        </InputSelect>
+        <button type="submit" class="btn btn-primary btn-block mt-5">Submit</button>
+    </EditForm>
+</div>
+}
+@code {
+    [Parameter]
+    public int NoteId { get; set; }
+    private NoteEdit model = new();
+    private IEnumerable<CategoryListItem> categories;
+    private string errorMessage;
+    protected override async Task OnInitializedAsync()
+    {
+        model = await http.GetFromJsonAsync<NoteEdit>($"/api/note/{NoteId}");
+        categories = await http.GetFromJsonAsync<IEnumerable<CategoryListItem>>("/api/category/");
+    }
+    private async void HandleSubmit()
+    {
+        
+        System.Diagnostics.Debugger.Break();
+        var createRes = await http.PutAsJsonAsync<NoteEdit>($"/api/note/edit/{NoteId}", model);
+        if (createRes.IsSuccessStatusCode)
+        {
+            navigation.NavigateTo($"/note/{NoteId}");
+        }
+        else
+        {
+            errorMessage = "Could not edit your note right now. Please try again later.";
+        }
+    }
+
+}
