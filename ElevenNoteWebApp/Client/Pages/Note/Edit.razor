@@ -54,7 +54,6 @@ else
     private async void HandleSubmit()
     {
         
-        System.Diagnostics.Debugger.Break();
         var createRes = await http.PutAsJsonAsync<NoteEdit>($"/api/note/edit/{NoteId}", model);
         if (createRes.IsSuccessStatusCode)
         {

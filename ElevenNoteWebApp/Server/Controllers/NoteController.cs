@@ -35,7 +35,7 @@ namespace ElevenNoteWebApp.Server.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(NoteCreate model)
         {
-            if (model == null) return BadRequest(0);
+            if (model == null) return BadRequest();
             if (!SetUserIdInService()) return Unauthorized();
             bool wasSuccessful = await _noteService.CreateNoteAsync(model);
 
